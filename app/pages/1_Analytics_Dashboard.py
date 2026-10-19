@@ -19,8 +19,27 @@ st.title("Analytics Dashboard")
 st.caption("Synthetic demonstration data only")
 
 if not DATA_FILE.exists():
-	st.error("Synthetic orders are missing. Run `python src/data_generator.py` first.")
-	st.stop()
+    import subprocess
+    import sys
+
+    with st.spinner("Generating synthetic demonstration data..."):
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(PROJECT_ROOT / "src" / "data_generator.py"),
+            ],
+            cwd=PROJECT_ROOT,
+            capture_output=True,
+            text=True,
+        )
+
+    if result.returncode != 0 or not DATA_FILE.exists():
+        st.error("Unable to generate the synthetic demonstration dataset.")
+
+        if result.stderr:
+            st.code(result.stderr)
+
+        st.stop()
 
 orders = load_orders()
 required_columns = {
