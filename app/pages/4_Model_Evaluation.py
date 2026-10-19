@@ -7,6 +7,7 @@ import joblib
 import pandas as pd
 import plotly.express as px
 import streamlit as st
+from src.cloud_setup import prepare_cloud_files
 
 from sklearn.metrics import (
     accuracy_score,
@@ -192,6 +193,13 @@ def calculate_metrics(y_test, probabilities, threshold):
 # CHECK REQUIRED FILES
 # --------------------------------------------------
 
+try:
+    prepare_cloud_files()
+except Exception as exc:
+    st.error("Unable to prepare the model for evaluation.")
+    st.exception(exc)
+    st.stop()
+
 missing_files = [
     path
     for path in [DATA_FILE, MODEL_FILE, THRESHOLD_FILE]
@@ -376,7 +384,7 @@ with left:
 
     st.plotly_chart(
         fig,
-        use_container_width=True,
+        width="stretch",
     )
 
     st.write(f"True negatives: {tn}")
@@ -418,7 +426,7 @@ with right:
 
     st.plotly_chart(
         fig,
-        use_container_width=True,
+        width="stretch",
     )
 
 
@@ -454,7 +462,7 @@ fig = px.line(
 
 st.plotly_chart(
     fig,
-    use_container_width=True,
+    width="stretch",
 )
 
 
@@ -479,7 +487,7 @@ report_df = pd.DataFrame(report).transpose()
 
 st.dataframe(
     report_df.round(3),
-    use_container_width=True,
+    width="stretch",
 )
 
 

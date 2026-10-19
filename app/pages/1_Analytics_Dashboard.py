@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pandas as pd
 import streamlit as st
+from src.cloud_setup import prepare_cloud_files
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -18,28 +19,12 @@ def load_orders() -> pd.DataFrame:
 st.title("Analytics Dashboard")
 st.caption("Synthetic demonstration data only")
 
-if not DATA_FILE.exists():
-    import subprocess
-    import sys
-
-    with st.spinner("Generating synthetic demonstration data..."):
-        result = subprocess.run(
-            [
-                sys.executable,
-                str(PROJECT_ROOT / "src" / "data_generator.py"),
-            ],
-            cwd=PROJECT_ROOT,
-            capture_output=True,
-            text=True,
-        )
-
-    if result.returncode != 0 or not DATA_FILE.exists():
-        st.error("Unable to generate the synthetic demonstration dataset.")
-
-        if result.stderr:
-            st.code(result.stderr)
-
-        st.stop()
+try:
+    prepare_cloud_files()
+except Exception as exc:
+    st.error("Unable to prepare the application data and model.")
+    st.exception(exc)
+    st.stop()
 
 orders = load_orders()
 required_columns = {
